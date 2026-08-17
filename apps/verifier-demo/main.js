@@ -107,9 +107,6 @@ function render() {
   $("seller-facts").innerHTML = "<span>Boolean sonuç</span><span>Domain bağlı</span>";
   paintWallets();
   renderThresholds();
-  const canProve = zclaimOn && sent && wasmReady;
-  $("prove").disabled = !canProve;
-  $("verify").disabled = !canProve;
   if (!zclaimOn) {
     $("buyer-hint").textContent = sent
       ? "2,70 ZEC B’ye gitti. ZClaim kapalı; uygulamaya kanıt yok."
@@ -154,8 +151,10 @@ function issueRequest() {
 }
 
 function prove() {
+  if (!zclaimOn) return setResult("buyer-out", "Önce sağ üstteki ZClaim anahtarını aç.", "blocked");
+  if (!wasmReady) return setResult("buyer-out", "Kanıt motoru hâlâ yükleniyor. Birkaç saniye bekle.", "blocked");
+  if (!sent || !wallet) return setResult("buyer-out", "Önce B’ye 2,70 ZEC gönder.", "blocked");
   if (!request) return setResult("buyer-out", "Önce sağ taraftan bir sorgu gönder.", "blocked");
-  if (!wallet) return setResult("buyer-out", "Önce B’ye 2,70 ZEC gönder.", "blocked");
   const response = JSON.parse(wallet.respond(JSON.stringify(request), height())); queryCount++;
   $("guard-meter").style.width = `${Math.min(100, queryCount * 20)}%`;
   if (response.status !== "ANSWER") {
@@ -175,7 +174,8 @@ function prove() {
 }
 
 function verify() {
-  if (!request || !presentation) return setResult("seller-out", "Doğrulanacak bir kanıt yok.", "blocked");
+  if (!zclaimOn) return setResult("seller-out", "Önce sağ üstteki ZClaim anahtarını aç.", "blocked");
+  if (!request || !presentation) return setResult("seller-out", "Doğrulanacak bir kanıt yok. Sırayla: gönder → sorgu → kanıt.", "blocked");
   try {
     const accepted = JSON.parse(verifier.accept(JSON.stringify(request), JSON.stringify(presentation)));
     $("app-state").textContent = "TRUE"; $("packet").textContent = "TRUE";
