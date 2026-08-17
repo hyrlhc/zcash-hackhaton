@@ -1,110 +1,79 @@
 # ZClaim
 
-**Don't ask for the data. Ask for the proof.**
+## Veriyi isteme. Kanıtı iste.
 
-Zcash already hides the payment. We are trying to let an application ask *one
-question* about that payment — and learn nothing else.
+Zcash bir ödemenin tutarını, taraflarını ve işlem ayrıntılarını gizler. Bu güçlü bir mahremiyet sağlar; ancak bir uygulamanın basit bir koşulu doğrulaması gerektiğinde iki kötü seçenek bırakır: hiçbir şey öğrenememek veya kullanıcıdan gereğinden fazla bilgi istemek.
 
----
+ZClaim bu ikisinin arasına üçüncü bir yol koyar.
 
-## What we are trying to do
+Bir uygulama “Bu kullanıcı en az 5 ZEC ödedi mi?” diye sorar. Kullanıcının cüzdanı ödeme kaydını paylaşmak yerine yalnızca koşulun doğru olduğunu gösteren bir kanıt üretir. Uygulama sonucu doğrular; tam tutarı, cüzdan adresini, işlem kimliğini veya diğer ödemeleri öğrenmez.
 
-A shielded ZEC payment is invisible on an explorer. That is the point of Zcash.
-It is also a problem the moment a real service needs a decision:
-
-> Did this person pay the event desk at least the ticket price?
-
-Today, vanilla Zcash gives you two bad answers:
-
-1. **See nothing.** The door is blind. There is no “did they pay?” API.
-2. **Share a viewing key.** The door sees the exact amount, the memo, more than
-   it asked for. Privacy is spent to get a boolean.
-
-We want a third answer: **yes or no.** Not the amount. Not the wallet. Not the
-transaction. Not a list of other payments.
-
-That is the whole product.
-
-```
-Hidden payment          One question              One bit
-2.7 ZEC to the cafe  →  “at least 1 ZEC?”     →  TRUE
-                         exact amount              still hidden
+```text
+Gizli Zcash ödemesi  →  “Ödeme en az 5 ZEC mi?”  →  TRUE
+                                  |
+                    tutar ve işlem ayrıntıları gizli kalır
 ```
 
-If the cafe then asks `≥ 2`, `≥ 2.5`, `≥ 2.6` to hunt the 2.7, the wallet
-stops. A sequence of honest questions is still an attack. We call that the
-**Inference Guard**.
+## Neden Zcash?
 
----
+ZClaim, Zcash’in sunduğu gizliliğin yerine geçmez. Onun üzerine çalışır.
 
-## What vanilla Zcash already does — and what it does not
+Zcash’in shielded ödemeleri tutarı ve tarafları zincirde açıkça yayınlamaz. Buna rağmen her ödeme, Zcash’in korumalı durumunun parçasıdır. ZClaim, cüzdanın bildiği ödeme bilgisini bu zincir durumuna bağlar ve yalnızca istenen koşulu kanıtlar.
 
-| | Vanilla Zcash | With ZClaim |
-|---|---|---|
-| Explorer | Payment is hidden | Still hidden |
-| Can an app ask “paid enough?” | No. Blind, or open the note | Yes. One bit |
-| Viewing key | Opens the receipt | Not used |
-| Same answer at another app | n/a | Fails. Bound to one request |
-| Asking again with a higher bar | n/a | Wallet can refuse |
+Bu nedenle uygulama bir viewing key istemez, ödeme fişini açmaz ve kullanıcıdan zincir geçmişini paylaşmasını beklemez. Zcash ödemeyi gizli tutar; ZClaim uygulamanın ihtiyaç duyduğu sınırlı cevabı üretir.
 
-We are not replacing Zcash privacy. We are **not spending it** to make an app
-work. The chain stays silent at the gate. The phone hands over a proof, not a
-statement dump.
+## Bir cevap neden yeterli değil?
 
-On a transparent chain this question is empty: the amount is already public.
-ZClaim only makes sense *because* Zcash hid the payment first.
+Tek bir `TRUE` veya `FALSE` cevabı az bilgi taşır. Fakat aynı uygulama eşikleri değiştirerek tekrar tekrar sorarsa gizli tutara yaklaşabilir:
 
----
-
-## Run it
-
-```bash
-cargo run --release -p quantum-cafe
+```text
+En az 1 ZEC mi?    TRUE
+En az 2 ZEC mi?    TRUE
+En az 2,5 ZEC mi?  TRUE
+En az 2,6 ZEC mi?  ...
 ```
 
-Browser:
+Sorular tek başlarına makul görünse de birlikte bir indeksleme saldırısına dönüşür. ZClaim bu yüzden yalnızca kanıt üretmez; uygulamanın zaman içinde ne kadar bilgi öğrendiğini de takip eder.
 
-```bash
-cargo run -p chain-api --release          # reads live testnet roots
-cd apps/verifier-demo && npm install && npm run dev
-```
+Inference Guard, yeni bir sorunun olası iki cevabını da önceden değerlendirir. Soru gizli tutarı izin verilen aralıktan fazla daraltabilecekse cüzdan cevap üretmez. Karar gerçek cevaba göre verilmez; böylece reddedilmenin kendisi de ek bilgi sızdırmaz.
 
-Open [http://localhost:5173](http://localhost:5173). Leave ZClaim **off** to see
-what the chain publishes (block, root — never who or how much). Turn it **on**
-to ask the question.
+Guard uygulamada değil cüzdanda çalışır. Çünkü sorguyu yapan tarafın kendi erişimini sınırlamasına güvenilemez. Mahremiyetin kontrolü, verinin sahibi olan tarafta kalmalıdır.
 
-Live roots: `https://testnet.zec.rocks:443` (public testnet, read-only). No
-ZEC is sent by this demo. The 2.7 ZEC note in the proof is built locally; the
-demo says so. `--chain` on the CLI shows a real verifier **refusing** that
-local root.
+## Ne doğrulanır, ne gizli kalır?
 
-Turkish walkthrough: [`docs/kullanim.md`](docs/kullanim.md).
+Uygulama şunları doğrulayabilir:
 
----
+- Ödemenin belirtilen koşulu sağladığını
+- Ödemenin doğru alıcıyla ilişkili olduğunu
+- Kanıtın belirli bir uygulama ve istek için üretildiğini
+- Aynı ödemenin aynı uygulamada tekrar kullanılmadığını
+- Ödemenin kabul edilen bir Zcash durumuna bağlı olduğunu
 
-## Honest limit
+Şunları öğrenmez:
 
-The cryptography is real. A note of ours on public testnet is not wired into
-the prover yet — that needs a funded wallet scan, not a new circuit. We do not
-pretend otherwise.
+- Tam ödeme tutarını
+- Kullanıcının cüzdan adresini
+- İşlem kimliğini
+- Memo içeriğini
+- Kullanıcının diğer ödemelerini
+- Aynı kullanıcının başka uygulamalardaki hareketlerini
 
----
+Kanıtlar uygulamaya özel bağlanır. Bir hizmet için üretilen cevap başka bir hizmette kullanılamaz; farklı uygulamalar kayıtlarını birleştirerek ortak bir kullanıcı profili çıkaramaz.
 
-## For people who want the how
+## Projenin bugünkü sınırı
 
-Halo2 IPA over Pasta (`k = 11`), Zcash’s own `NoteCommit^Orchard` and
-`MerkleCRH^Orchard` (`orchard/unstable-voting-circuits`). No trusted setup, no
-merchant-signed credential.
+Kanıt sistemi Zcash’in Orchard yapısını ve gerçek sıfır bilgi kanıtlarını kullanır. Uygulama ayrıca public Zcash testnet durumunu okuyabilir ve doğrulayıcının kabul ettiği zincir köklerini takip edebilir.
 
-The wallet proves: *this Orchard note sits under this tree root, pays this
-receiver, and the amount clears this bar* — bound to this app and this
-request. The verifier checks the proof **and** that the root is a real chain
-root. Tags are scoped per app so two doors cannot join logs. The Guard tracks
-interval width and refuses a question that would pin the amount; it decides
-from the question, not from the secret answer.
+Ancak mevcut demo ödemesi henüz public testnet üzerinde oluşturulmuş bir nota bağlı değildir. Demo, yerelde hazırlanmış gerçek bir Orchard ödeme tanığıyla çalışır. Bu nedenle kriptografik kanıt gerçektir; demo ödemesinin public zincir geçmişi değildir. Arayüz bu iki kökü ayrı gösterir ve zincire ait olmayan demo kökünü gerçek testnet kökü gibi sunmaz.
 
-Tests: `cargo test --workspace --release`. Design notes:
-[`docs/architecture-decision.md`](docs/architecture-decision.md),
-[`docs/threat-model.md`](docs/threat-model.md).
+Inference Guard da tek başına mutlak bir güvenlik garantisi değildir. Sorgu geçmişinin kalıcı tutulması ve cüzdan tarafından zorunlu uygulanması gerekir. Geçmiş silinirse veya kullanıcı korumasız bir cüzdan kullanırsa sorgu sınırı aşılabilir.
 
-Don't ask for the data. Ask for the proof.
+## Amaç
+
+ZClaim’in amacı gizli bir ödemeyi görünür hale getirmek değil, uygulamaların o ödemeyle ilgili en az bilgiyle karar verebilmesini sağlamaktır.
+
+Bir üyelik sistemi, bilet kapısı, sadakat programı veya ödeme API’si bütün fişi istememelidir. İhtiyacı yalnızca bir koşulun doğru olup olmadığını bilmekse, yalnızca bunun kanıtını almalıdır.
+
+**Veriyi isteme. Kanıtı iste.**
+
+Teknik tasarım ve güvenlik sınırları için [mimari kararı](docs/architecture-decision.md) ve [tehdit modelini](docs/threat-model.md) inceleyebilirsiniz.
