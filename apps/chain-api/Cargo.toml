@@ -1,0 +1,21 @@
+[package]
+name = "chain-api"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Tiny HTTP wrapper around a live Zcash light wallet server."
+
+[[bin]]
+name = "chain-api"
+path = "src/main.rs"
+
+[dependencies]
+zclaim-zcash = { workspace = true, features = ["lightwalletd"] }
+axum = "0.8"
+ff.workspace = true
+hex.workspace = true
+pasta_curves.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread", "net"] }
+tower-http = { version = "0.6", features = ["cors"] }

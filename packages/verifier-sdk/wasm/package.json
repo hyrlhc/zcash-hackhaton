@@ -1,0 +1,17 @@
+{
+  "name": "zclaim-wasm",
+  "type": "module",
+  "description": "WebAssembly bindings for ZClaim: a wallet that proves, and a verifier that checks.",
+  "version": "0.1.0",
+  "license": "MIT OR Apache-2.0",
+  "files": [
+    "zclaim_bg.wasm",
+    "zclaim.js",
+    "zclaim.d.ts"
+  ],
+  "main": "zclaim.js",
+  "types": "zclaim.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

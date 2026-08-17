@@ -1,0 +1,32 @@
+{
+  "name": "@zclaim/verifier-sdk",
+  "version": "0.1.0",
+  "description": "Ask whether a Zcash shielded payment cleared a bar, without seeing the payment.",
+  "license": "MIT OR Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./wallet": {
+      "types": "./dist/wallet.d.ts",
+      "default": "./dist/wallet.js"
+    }
+  },
+  "files": [
+    "dist",
+    "wasm"
+  ],
+  "scripts": {
+    "build:wasm": "cd ../../crates/zclaim-wasm && wasm-pack build --release --target web --out-dir ../../packages/verifier-sdk/wasm --out-name zclaim",
+    "build": "npm run build:wasm && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test tests/*.test.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0"
+  }
+}

@@ -1,0 +1,23 @@
+[package]
+name = "quantum-cafe"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "The ZClaim demo: prove a shielded payment cleared a bar, and watch the Inference Guard stop the follow-up questions."
+
+[[bin]]
+name = "quantum-cafe"
+path = "src/main.rs"
+
+[dependencies]
+zclaim-circuits = { workspace = true, features = ["multicore", "test-fixtures"] }
+zclaim-core.workspace = true
+zclaim-inference.workspace = true
+zclaim-proof = { workspace = true, features = ["multicore"] }
+zclaim-protocol = { workspace = true, features = ["multicore"] }
+zclaim-zcash = { workspace = true, features = ["lightwalletd", "multicore"] }
+
+ff.workspace = true
+hex.workspace = true
+pasta_curves.workspace = true
+rand.workspace = true

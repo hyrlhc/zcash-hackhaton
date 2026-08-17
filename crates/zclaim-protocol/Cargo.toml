@@ -1,0 +1,33 @@
+[package]
+name = "zclaim-protocol"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "The two sides of a ZClaim exchange: a holder that decides whether to answer, and a verifier that decides whether to believe."
+
+[dependencies]
+zclaim-circuits.workspace = true
+zclaim-core.workspace = true
+zclaim-inference.workspace = true
+zclaim-proof.workspace = true
+zclaim-zcash.workspace = true
+
+ff.workspace = true
+hex.workspace = true
+pasta_curves.workspace = true
+rand.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+[features]
+default = ["multicore"]
+# Parallel proving. Off for wasm32, which has no atomics on stable Rust.
+multicore = [
+    "zclaim-circuits/multicore",
+    "zclaim-proof/multicore",
+    "zclaim-zcash/multicore",
+]
+
+[dev-dependencies]
+zclaim-circuits = { workspace = true, features = ["test-fixtures"] }
+serde_json.workspace = true

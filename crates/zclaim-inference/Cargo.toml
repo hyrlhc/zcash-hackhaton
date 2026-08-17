@@ -1,0 +1,15 @@
+[package]
+name = "zclaim-inference"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Inference Guard: refuses proof requests that would narrow a hidden amount."
+
+[dependencies]
+zclaim-core.workspace = true
+
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

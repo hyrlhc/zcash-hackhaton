@@ -1,0 +1,35 @@
+[package]
+name = "zclaim-zcash"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Chain-facing side of ZClaim: note recovery, tree witnesses, anchor authentication."
+
+[dependencies]
+zclaim-circuits.workspace = true
+zclaim-core.workspace = true
+
+orchard.workspace = true
+incrementalmerkletree = { workspace = true, features = ["legacy-api"] }
+pasta_curves.workspace = true
+ff.workspace = true
+hex.workspace = true
+rand.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+prost = { workspace = true, optional = true }
+tokio = { workspace = true, optional = true }
+tonic = { workspace = true, optional = true }
+tonic-prost = { workspace = true, optional = true }
+
+[features]
+default = ["multicore"]
+# Parallel proving. Off for wasm32, which has no atomics on stable Rust.
+multicore = ["orchard/multicore", "zclaim-circuits/multicore"]
+# A gRPC client for lightwalletd / Zaino. Off by default so the circuit crates
+# can be built and tested without pulling in an async runtime and TLS stack.
+lightwalletd = ["dep:prost", "dep:tokio", "dep:tonic", "dep:tonic-prost"]
+
+[dev-dependencies]
+zclaim-circuits = { workspace = true, features = ["test-fixtures"] }

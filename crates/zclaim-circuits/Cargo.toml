@@ -1,0 +1,31 @@
+[package]
+name = "zclaim-circuits"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "The ZClaim predicate circuit, built on Zcash's own Orchard gadgets."
+
+[dependencies]
+zclaim-core.workspace = true
+
+orchard.workspace = true
+halo2_proofs.workspace = true
+halo2_gadgets.workspace = true
+pasta_curves.workspace = true
+incrementalmerkletree.workspace = true
+ff.workspace = true
+group.workspace = true
+hex.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+[features]
+default = ["multicore"]
+# Parallel proving. Off for wasm32, which has no atomics on stable Rust.
+multicore = ["orchard/multicore", "halo2_proofs/multicore"]
+# Exposes deterministic note/tree fixtures. Real cryptography, local provenance.
+test-fixtures = []
+
+[dev-dependencies]
+rand.workspace = true
+serde_json.workspace = true

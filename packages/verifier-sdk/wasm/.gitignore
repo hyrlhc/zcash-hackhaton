@@ -1,0 +1,2 @@
+# Intentionally empty so the wasm-pack output is committed.
+# The browser demo needs these files without a local wasm-pack rebuild.

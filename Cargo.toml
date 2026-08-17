@@ -1,0 +1,72 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/zclaim-core",
+    "crates/zclaim-circuits",
+    "crates/zclaim-proof",
+    "crates/zclaim-inference",
+    "crates/zclaim-zcash",
+    "crates/zclaim-protocol",
+    "crates/zclaim-wasm",
+    "apps/quantum-cafe",
+    "apps/chain-api",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+# Inherited with `default-features = false` so that `multicore` is never
+# switched on implicitly by an intermediate crate. Each crate forwards it
+# explicitly through its own `multicore` feature, which is how the wasm build
+# manages to turn it off for the whole graph — a member cannot override
+# `default-features` on an inherited dependency.
+zclaim-core = { path = "crates/zclaim-core", default-features = false }
+zclaim-circuits = { path = "crates/zclaim-circuits", default-features = false }
+zclaim-proof = { path = "crates/zclaim-proof", default-features = false }
+zclaim-inference = { path = "crates/zclaim-inference", default-features = false }
+zclaim-zcash = { path = "crates/zclaim-zcash", default-features = false }
+zclaim-protocol = { path = "crates/zclaim-protocol", default-features = false }
+zclaim-wasm = { path = "crates/zclaim-wasm", default-features = false }
+
+# `multicore` is deliberately absent from both of these and re-exposed as an
+# opt-out feature on our own crates instead. halo2's multicore support needs
+# wasm atomics, which stable Rust does not give us, so the browser build turns
+# it off; native builds keep it via the default features below.
+orchard = { version = "0.15", default-features = false, features = [
+    "circuit",
+    "std",
+    "unstable-voting-circuits",
+] }
+halo2_proofs = { version = "0.3", default-features = false, features = ["batch"] }
+halo2_gadgets = "0.5"
+sinsemilla = "0.1"
+pasta_curves = "0.5"
+incrementalmerkletree = "0.8.1"
+zcash_note_encryption = "0.4.2"
+zcash_protocol = "0.7"
+
+# The lightwalletd client. gRPC messages are declared by hand in
+# `zclaim-zcash`, so no `protoc` is needed to build this workspace.
+tonic = { version = "0.14", default-features = false, features = [
+    "channel",
+    "codegen",
+    "transport",
+    "tls-ring",
+    "tls-native-roots",
+] }
+tonic-prost = "0.14"
+prost = "0.14"
+tokio = { version = "1", features = ["rt-multi-thread"] }
+
+blake2b_simd = "1"
+ff = "0.13"
+group = "0.13"
+hex = "0.4"
+rand = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
