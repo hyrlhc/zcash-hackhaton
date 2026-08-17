@@ -2,190 +2,106 @@
 
 **Veriyi isteme. Kanıtı iste.**
 
-ZClaim, bir Zcash korumalı ödemesinin belirli bir koşulu sağladığını, ödemenin
-kendisini açığa çıkarmadan kanıtlar.
+Zcash ödemeyi zaten gizliyor. Biz o gizliliği bozmadan bir uygulamanın **tek
+bir soru** sorabilmesini istiyoruz.
 
-Bir kullanıcı Quantum Cafe'ye 2,7 ZEC öder. Doğrulayıcı sorar: *"Quantum Cafe'ye
-en az 1 ZEC ödedin mi?"* ZClaim `TRUE` yanıtını verir. Doğrulayıcı tutarı,
-adresi, işlemi veya başka bir ödemeyi öğrenmez — ve eşiği yükselterek tekrar
-tekrar sorup tutarı çıkarmaya çalıştığında cüzdan yanıt vermeyi bırakır.
+---
+
+## Ne yapmaya çalışıyoruz
+
+Korumalı bir ZEC ödemesi explorer’da görünmez. Bu Zcash’in işi. Bir hizmetin
+karar vermesi gerektiğinde aynı şey sorun olur:
+
+> Bu kişi gişeye en az bilet kadar ödedi mi?
+
+Saf Zcash bugün iki kötü seçenek sunar:
+
+1. **Hiç görme.** Kapı kördür. “Ödedi mi?” diye bir komut yoktur.
+2. **Viewing key ver.** Kapı tam tutarı, memoyu, sorulmayan her şeyi açar.
+   Bir bit için mahremiyet harcanır.
+
+Üçüncü cevap: **evet veya hayır.** Tutar değil. Cüzdan değil. İşlem değil.
+Başka ödemeler değil.
+
+Ürün bu kadar.
 
 ```
+Gizli ödeme              Tek soru                 Tek bit
+Cafe'ye 2,7 ZEC      →   “en az 1 ZEC mi?”    →   EVET
+                          tam tutar                hâlâ gizli
+```
+
+Cafe sonra `≥ 2`, `≥ 2,5`, `≥ 2,6` diye 2,7’yi avlarsa cüzdan durur. Dürüst
+soruların dizisi de saldırıdır. Buna **Inference Guard** diyoruz.
+
+---
+
+## Saf Zcash ne yapıyor — ZClaim ne ekliyor
+
+| | Saf Zcash | ZClaim ile |
+|---|---|---|
+| Explorer | Ödeme gizli | Yine gizli |
+| Uygulama “yeterince ödendi mi?” | Hayır. Kör, ya da fişi aç | Evet. Bir bit |
+| Viewing key | Makbuzu açar | Kullanılmaz |
+| Aynı cevap başka uygulamada | — | Geçmez. Tek isteğe kilitli |
+| Eşiği yükseltip tekrar sor | — | Cüzdan reddedebilir |
+
+Zcash gizliliğinin yerine geçmiyoruz. Onu **harcamadan** uygulamayı
+çalıştırıyoruz. Kapıda zincir susar. Telefon veri değil kanıt uzatır.
+
+Şeffaf bir zincirde bu soru boştur: tutar zaten açıktır. ZClaim ancak Zcash
+ödemeyi *önce* gizlediği için anlamlıdır.
+
+---
+
+## Çalıştır
+
+```bash
 cargo run --release -p quantum-cafe
 ```
 
 Tarayıcı:
 
-```
+```bash
+cargo run -p chain-api --release
 cd apps/verifier-demo && npm install && npm run dev
 ```
 
-Anlatım ve kullanım: [`docs/kullanim.md`](docs/kullanim.md).
+[http://localhost:5173](http://localhost:5173) — ZClaim kapalıyken zincirin ne
+yayımladığı (blok, kök; kim ve tutar yok). Açınca soru sorulur.
+
+Canlı kökler: `https://testnet.zec.rocks:443` (public testnet, sadece okuma).
+Bu demo ZEC göndermez. Kanıttaki 2,7 ZEC notu yerelde kurulur; demo bunu
+söyler. CLI’de `--chain` gerçek doğrulayıcının o yerel kökü **reddettiğini**
+gösterir.
+
+Anlatım: [`docs/kullanim.md`](docs/kullanim.md).
 
 ---
 
-## İki iddia
+## Dürüst sınır
 
-**1. Tek soru, tek bit.** Kanıt, gerçek bir Orchard notu üzerinde gerçek bir
-Halo2 kanıtıdır ve Zcash'in kendi not taahhüdü ile Merkle aygıtlarını kullanır.
-Satıcı imzalı bir credential yok, güvenilen bir issuer yok, oracle yok.
-
-**2. Soru dizisi de bir saldırıdır.** `>= 1`, `>= 2`, `>= 2,5`, `>= 2,6`
-sorularının her biri tek başına sağlamdır; birlikte, tutarı gizlemek için
-kurulmuş bir sistemden o tutarı ikili aramayla çıkarırlar. **Inference Guard**,
-yanıtların toplamda ne anlama geldiğini takip eder ve aralık bir tabanın altına
-daralmadan önce reddeder. Cüzdan tarafında çalışır, çünkü saldırgan
-doğrulayıcıdır.
-
-Bunu bir devreden fazlası yapan şey ikincisidir.
+Kriptografi gerçek. Public testnet’te bize ait bir not henüz kanıtlayıcıya
+bağlı değil — bunun için fonlu cüzdan taraması gerekir, yeni devre değil.
+Aksini iddia etmiyoruz.
 
 ---
 
-## Durum
+## Nasıl yaptığımız (kısa)
 
-`cargo test --workspace --release` — **85 test geçiyor**; bunlara yalnızca
-`MockProver` değil gerçek IPA kanıtları ve Zcash testnet ağaç durumunun canlı
-okunması da dahil.
+Pasta üzerinde Halo2 IPA (`k = 11`), Zcash’in kendi `NoteCommit^Orchard` ve
+`MerkleCRH^Orchard` aygıtları (`orchard/unstable-voting-circuits`). Güvenilen
+kurulum yok, satıcı imzalı credential yok.
 
-| | |
-|---|---|
-| Not taahhüdü | Zcash'in kendi `NoteCommit^Orchard` aygıtı, değiştirilmeden |
-| Ağaç üyeliği | Zcash'in kendi `MerkleCRH^Orchard`'ı, 32 seviye |
-| Kanıt sistemi | Pallas/Vesta üzerinde `halo2_proofs` IPA, güvenilir kurulum yok, `k = 11` |
-| Havuzlar | Orchard ve Ironwood (NU6.3) — tek devre ikisini de kapsıyor |
-| Zincir okuma | Canlı; `testnet.zec.rocks:443`'e karşı light wallet gRPC ile |
-| Zincir yazma | **Yok.** Henüz açık bir zincirde bize ait bir not bulunmuyor |
+Cüzdan şunu kanıtlar: *bu Orchard notu bu ağaç kökünün altında, bu alıcıya
+gidiyor, tutar bu eşiği geçiyor* — bu uygulamaya ve bu isteğe kilitli.
+Doğrulayıcı kanıtı **ve** kökün gerçek zincir kökü olduğunu kontrol eder.
+Etiketler uygulamaya göredir; iki kapı log birleştiremez. Guard aralık
+genişliğine bakar, tutarı iğneleyecek soruyu reddeder; kararı cevaba değil
+soruya göre verir.
 
-Son satır dürüst uyarıdır ve demo bunu kendi ilk ekranında söyler. Testler ve
-demo gerçek bir Orchard taahhüt ağacı kurar, ama yerel olarak. Zincir üstünde
-bir tane üretmek testnet fonu ve bir cüzdan taraması gerektirir — kriptografi
-değil, lojistik. `--chain` ile çalıştırın ve zincire bağlı bir doğrulayıcının
-demonun kendi kökünü reddedişini izleyin.
+Test: `cargo test --workspace --release`. Ayrıntı:
+[`docs/architecture-decision.md`](docs/architecture-decision.md),
+[`docs/threat-model.md`](docs/threat-model.md).
 
-Depoda hiçbir yerde sahte (mock) kanıt modu yoktur.
-
----
-
-## Beyan
-
-Özel tanık, ispatlayıcının dışına asla çıkmaz:
-
-```
-g_d, pk_d       alıcı adresinin eğri noktaları
-v               zatoshi cinsinden not değeri
-rho, psi, rcm   not rastgeleliği
-path, pos       not taahhüt ağacındaki doğrulama yolu
-holder_sk       nottan bağımsız, uzun ömürlü cüzdan sırrı
-```
-
-Açık girdiler, doğrulayıcının gördüğü her şey:
-
-```
-anchor                          not taahhüt ağacı kökü
-merchant g_d.x, g_d.y,
-         pk_d.x, pk_d.y         satıcının eksiksiz Orchard alıcı adresi
-threshold, direction            eşik ve karşılaştırmanın yönü
-domain_tag                      H(doğrulayıcı alanı)
-nullifier    = Poseidon(psi, domain_tag)
-holder_tag   = Poseidon(holder_sk, domain_tag)
-context      = H(alan, nonce, predikat, amaç, son geçerlilik)
-```
-
-> `anchor` altında taahhüt edilmiş, `(g_d, pk_d)` alıcısına ödeme yapan ve değeri
-> `threshold` karşılaştırmasını sağlayan bir Orchard notu biliyorum; yayımlanan
-> etiketler o nottan ve elimdeki bir sırdan türetildi, ikisi de bu doğrulayıcıya
-> kapsanmış durumda; ve tamamı `context`'e bağlı.
-
-`holder_sk` dışındaki her şey, ispatlayıcının şifresini çözebildiği bir nottan
-elde edilebilir — alıcı olarak `ivk` ile veya gönderen olarak `ovk` ile.
-
-## Neden Zcash
-
-Beyan *Zcash konsensüs durumu hakkındadır*. Anchor bir Zcash taahhüt ağacı
-köküdür; taahhüt, korumalı bir not üzerindeki Sinsemilla taahhüdüdür. Şeffaf bir
-zincirde tutar zaten açıktır, dolayısıyla soru anlamsızdır; not taahhüt ağacı
-olmayan bir zincirde ise Merkle kanıtı verilecek bir şey yoktur. Mahremiyeti
-ZClaim eklemiyor — o Zcash'in; ZClaim onu feda etmeden soru yanıtlamanın yolu.
-
-Not taahhüdü aygıtını dışa açan `orchard/unstable-voting-circuits` özelliği,
-üçüncü tarafların Orchard notları üzerinde devre kurabilmesi için var. Onu
-kullanmak öngörülen yol, bir kenar yol değil.
-
-## İkinci kez bakılmayı hak eden üç tasarım kararı
-
-**Satıcı bağlaması dört alan elemanı, bir tane değil.** Yalnızca `x(pk_d)`
-bağlamak bir makbuz olarak sağlam değildir: herkes, satıcının gerçek `pk_d`'sine
-ama satıcının hiç kullanmadığı bir diversifier tabanına adreslenmiş bir not
-üretebilir. Not düzgün taahhüt edilir, ağaca düzgün girer; ama satıcı onu ne
-fark edebilir ne harcayabilir — para alınmış değil, yakılmıştır. Her iki noktanın
-her iki koordinatını bağlamak bu ailenin tamamını kapatır. Maliyeti dört instance
-satırı.
-
-**Etiketler `H(alan)`'a kapsanır, istek bağlamına değil.** `context` her istekte
-değişen bir nonce taşır; ondan türetilen bir nullifier de her istekte değişir ve
-aynı ödemenin ikinci kez talep edilmesini yakalamakta işe yaramaz. Alana kapsamak
-nullifier'ı tek doğrulayıcıda kararlı, başka her yerde ilişkisiz kılar.
-
-**Guard soruya bakarak karar verir, yanıta asla.** İki olası yanıtın üreteceği
-iki aralıktan *daha darını* değerlendirir. Fiilen alınacak dala göre karar
-verseydi, yanıt beklenen yerde gelen bir ret, karşılaştırmanın hangi yöne
-gittiğini sızdırırdı.
-
-## Mevcut çalışmalardan farkı
-
-- **[Glasspane](https://github.com/dolepee/glasspane)** doğrulayıcıya bir
-  Outgoing Cipher Key vererek tek bir çıktının şifresini çözdürür — tam değeri
-  geri kazandırır. Bu ifşadır. ZClaim bir predikat kanıtlar ve hiçbir şey ifşa
-  etmez.
-- **[ZAP1](https://github.com/frontier-compute/zap1)** uygulama olaylarının
-  BLAKE2b Merkle köklerini korumalı memolara yazar. ZK yok, tutar hakkında beyan
-  yok, farklı katman.
-- **[Shielded Voting](https://github.com/valargroup/voting-circuits)** en yakın
-  çalışma ve aynı üst akış mekanizmasını paylaşıyor. Oylama ağırlığı için toplu
-  sahiplik kanıtlıyor. ZClaim üçüncü taraf doğrulayıcılar için bir *alıcıya* ve
-  ödeme predikatına bağlanır, harcanmamışlık kanıtına ihtiyaç duymaz ve Inference
-  Guard'ı ekler.
-
-Tam karşılaştırma: [`docs/research.md`](docs/research.md).
-
-## Düzen
-
-```
-crates/zclaim-core/        predikatlar, doğrulayıcı alanları, istek bağlamı
-crates/zclaim-circuits/    Halo2 devresi, tanık, açık beyan
-crates/zclaim-proof/       kanıtlama/doğrulama anahtarları, kanıt baytları
-crates/zclaim-inference/   Inference Guard
-crates/zclaim-zcash/       anchor doğrulama, ağaç tanıkları, gRPC zincir istemcisi
-crates/zclaim-protocol/    Holder ve Verifier rolleri, birbirine bağlanmış
-apps/quantum-cafe/         terminal demosu
-apps/verifier-demo/        tarayıcı demosu
-packages/verifier-sdk/     TypeScript SDK (WASM)
-```
-
-```
-docs/research.md              yığın araştırması, önceki çalışmalar, fizibilite
-docs/architecture-decision.md tasarım ve henüz doğru olmayanlar
-docs/threat-model.md          neyin geçerli olduğu, neyin olmadığı, kime karşı
-docs/demo.md                  demoyu çalıştırma ve anlatma rehberi
-docs/kullanim.md              çocuğa anlatır gibi + kullanım kılavuzu
-```
-
-## Geliştirme
-
-Rust `rust-toolchain.toml` ile sabitlenmiştir (1.97.1). `protoc` gerekmez —
-protobuf mesajları elle tanımlanmıştır.
-
-```bash
-cargo test --workspace --release
-cargo test --workspace --release --features zclaim-zcash/lightwalletd
-cargo clippy --workspace --all-targets -- -D warnings
-
-cargo run --release -p quantum-cafe            # demo
-cargo run --release -p quantum-cafe -- --chain # ...canlı testnet'e karşı
-cargo run -p zclaim-zcash --features lightwalletd --example chain
-
-cd apps/verifier-demo && npm install && npm run dev   # tarayıcı demosu
-```
-
-İlk release derlemesi kanıtlama anahtarını üretir ve birkaç dakika sürer. Demodan
-önce bir kez çalıştırın.
+Veriyi isteme. Kanıtı iste.

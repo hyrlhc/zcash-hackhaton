@@ -19,7 +19,7 @@
         <section class="hero">
           <div class="eyebrow"><span>PRIVATE QUERY LAYER</span><span class="hairline"></span><span>ZCASH</span></div>
           <div class="hero-grid">
-            <div><h1>Veriyi değil,<br /><em>doğruluğunu</em> paylaş.</h1><p class="lede">Gizli bir Zcash ödemesi hakkında tek bitlik cevap üret. Tutar, adres ve işlem kimliği cüzdandan hiç çıkmasın.</p></div>
+            <div><h1>Veriyi değil,<br /><em>doğruluğunu</em> paylaş.</h1><p class="lede">A, B’ye sitede öder. Uygulama tutarı görmez; ZClaim açıkken yalnızca koşulun doğru olup olmadığını öğrenir.</p></div>
             <div class="mode-control">
               <div class="mode-copy"><span class="micro">DENEY MODU</span><strong id="mode-label">Yalnızca Zcash</strong><p id="mode-description">Zincir gizli; fakat uygulama ödeme koşulunu doğrulayamıyor.</p></div>
               <label class="switch" for="mode"><input type="checkbox" id="mode" /><span class="switch-track"><span class="switch-knob"></span></span><span class="sr-only">ZClaim katmanını aç veya kapat</span></label>
@@ -29,23 +29,50 @@
         <section class="reality-strip" aria-label="Demo gerçeklik durumu">
           <div><span class="status-icon live">●</span><p><small>CANLI VERİ</small><strong id="tip-value">Zcash testnet okunuyor</strong></p></div>
           <div><span class="status-icon local">◇</span><p><small>KANIT KAYNAĞI</small><strong>Yerel Orchard tanığı</strong></p></div>
-          <div class="reality-warning"><span>!</span><p><small>DÜRÜST SINIR</small><strong>Demo notu henüz public testnet'te değil</strong></p></div>
+          <div class="reality-warning"><span>!</span><p><small>DÜRÜST SINIR</small><strong>A→B gönderim sitede · ZEC zincire gitmiyor</strong></p></div>
         </section>
         <section class="workspace" id="workspace">
           <div class="workspace-head"><div><span class="section-no">01 / PROOF EXCHANGE</span><h2>İki taraf. Sıfır veri ifşası.</h2></div><button class="reset-button" id="reset" type="button">↻ Oturumu sıfırla</button></div>
           <div class="exchange">
             <article class="actor wallet" id="pane-buyer">
-              <div class="actor-head"><span class="actor-icon">W</span><div><small>SOL / İSTEK ALAN</small><h3>Özel cüzdan</h3></div><span class="actor-state" id="wallet-state">BEKLİYOR</span></div>
-              <p class="actor-desc" id="buyer-hint"></p>
-              <div class="secret-card"><div class="secret-top"><span>PRIVATE WITNESS</span><span>••••••</span></div><div class="secret-amount"><span>Ödenen tutar</span><strong>•••• ZEC</strong></div><div class="secret-meta"><span>Alıcı</span><code>u1••••••••q7</code></div><div class="secret-meta"><span>Tx ID</span><code>••••••••••••</code></div></div>
-              <div class="privacy-list" id="buyer-facts"></div><div class="actor-actions" id="buyer-actions"></div><div class="result-box" id="buyer-out" aria-live="polite"></div>
+              <div class="actor-head"><span class="actor-icon">A</span><div><small>SOL / MÜŞTERİ</small><h3>Cüzdan A</h3></div><span class="actor-state" id="wallet-state">HAZIR</span></div>
+              <p class="actor-desc" id="buyer-hint">Bakiye sitede durur. Dış cüzdan yok.</p>
+              <div class="secret-card">
+                <div class="secret-top"><span>YEREL CÜZDAN</span><span id="a-tag">5,00 ZEC</span></div>
+                <div class="secret-amount"><span>Bakiye</span><strong id="a-balance">5,00 ZEC</strong></div>
+                <div class="secret-meta"><span>Karşı taraf</span><code>Cüzdan B</code></div>
+                <div class="secret-meta"><span>Son hareket</span><code id="a-last">—</code></div>
+              </div>
+              <div class="ledger" id="a-ledger">
+                <div class="ledger-row muted"><span>·</span><span>Kayıt yok</span><span></span></div>
+                <div class="ledger-row muted"><span></span><span></span><span></span></div>
+                <div class="ledger-row muted"><span></span><span></span><span></span></div>
+              </div>
+              <div class="actor-actions"><button type="button" id="send-ab" class="primary">B'YE 2,7 ZEC GÖNDER</button></div>
+              <div class="privacy-list" id="buyer-facts"></div>
+              <div class="actor-actions" id="buyer-actions">
+                <button type="button" id="prove" class="primary" disabled>KANITI ÜRET</button>
+                <button type="button" id="verify" disabled>DOĞRULA →</button>
+              </div>
+              <div class="result-box" id="buyer-out" aria-live="polite">A: 5,00 ZEC · B: 0,00 ZEC</div>
             </article>
             <div class="channel" aria-hidden="true"><div class="channel-line"><span class="packet" id="packet">1 BIT</span></div><span class="channel-label" id="channel-label">KANAL KAPALI</span></div>
             <article class="actor verifier" id="pane-seller">
-              <div class="actor-head"><span class="actor-icon">A</span><div><small>SAĞ / İSTEK ATAN</small><h3>Uygulama API</h3></div><span class="actor-state" id="app-state">KÖR</span></div>
-              <p class="actor-desc" id="seller-hint"></p>
-              <div class="query-builder"><span class="micro">POLICY QUERY</span><div class="query-code"><span>payment.amount</span><strong>&gt;=</strong><span id="query-value">1.0 ZEC</span></div><div class="thresholds" id="seller-actions"></div></div>
-              <div class="privacy-list" id="seller-facts"></div><div class="result-box" id="seller-out" aria-live="polite"></div>
+              <div class="actor-head"><span class="actor-icon">B</span><div><small>SAĞ / DÜKKÂN</small><h3>Cüzdan B</h3></div><span class="actor-state" id="app-state">KÖR</span></div>
+              <p class="actor-desc" id="seller-hint">Gelen ödeme cüzdanda; uygulama zincirden tutarı okuyamaz.</p>
+              <div class="query-builder">
+                <div class="secret-top"><span>YEREL CÜZDAN</span><span id="b-tag">0,00 ZEC</span></div>
+                <div class="secret-amount"><span>Bakiye</span><strong id="b-balance">0,00 ZEC</strong></div>
+                <span class="micro">POLICY QUERY</span>
+                <div class="query-code"><span>payment.amount</span><strong>&gt;=</strong><span id="query-value">1.0 ZEC</span></div>
+                <div class="thresholds" id="seller-actions"></div>
+              </div>
+              <div class="ledger" id="b-ledger">
+                <div class="ledger-row muted"><span>·</span><span>Kayıt yok</span><span></span></div>
+                <div class="ledger-row muted"><span></span><span></span><span></span></div>
+                <div class="ledger-row muted"><span></span><span></span><span></span></div>
+              </div>
+              <div class="privacy-list" id="seller-facts"></div><div class="result-box" id="seller-out" aria-live="polite">Ödeme bekleniyor.</div>
             </article>
           </div>
         </section>
@@ -54,7 +81,7 @@
           <article class="panel chain-panel"><span class="section-no">03 / CHAIN TELEMETRY</span><div class="panel-title"><h2>Canlı Zcash görünümü</h2><span class="live-tag">READ ONLY</span></div><p>Bu alan public testnet'ten gelir. Kim, kime ve ne kadar ödedi bilgisi ağ tarafından yayınlanmaz.</p><dl id="chain-dl"><div><dt>Durum</dt><dd>lightwalletd bekleniyor…</dd></div></dl><button type="button" class="compare-root" id="btn-root">Yerel kanıt ile zincir kökünü karşılaştır →</button></article>
         </section>
       </main>
-      <footer><span>ZCLAIM / PROOF-OF-CONCEPT</span><span>Kanıt gerçek · Demo tanığı yerel · Zincir salt okunur</span></footer>
+      <footer><span>ZCLAIM / PROOF-OF-CONCEPT</span><span>Kanıt gerçek · A→B sitede · Zincir salt okunur</span></footer>
     </div>
     <script type="module" src="./main.js"></script>
   </body>
