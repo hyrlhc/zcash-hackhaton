@@ -1,117 +1,60 @@
 <!doctype html>
-<html lang="tr" data-theme="light">
+<html lang="tr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ZClaim — nasıl kullanılır</title>
+    <meta name="description" content="Zcash ödemeleri üzerinde veri açmadan koşul doğrulayan ZClaim demosu." />
+    <title>ZClaim — private payment proofs</title>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div class="wrap">
-    <header class="top">
-      <div>
-        <p class="brand">ZClaim</p>
-        <p class="sub">Gizli ödemeyi açmadan “evet / hayır” sor.</p>
-      </div>
-      <div class="toggles">
-        <label class="switch" for="mode">
-          <input type="checkbox" id="mode" />
-          <span id="mode-label">Şu an: sadece Zcash</span>
-        </label>
-        <button type="button" id="theme" class="icon-btn">Koyu tema</button>
-      </div>
-    </header>
-
-    <div class="money" role="note">
-      <strong>Para gitmiyor.</strong>
-      Arkada cüzdan açılmıyor, testnet’te ZEC transferi yok.
-      Ağ yalnızca <em>okunuyor</em> (blok, kök). 2,7 ZEC’lik kanıt bu tarayıcıda üretiliyor.
-    </div>
-
-    <section class="how">
-      <h1>Bu sayfa nasıl kullanılır</h1>
-      <ol>
-        <li>
-          Sayfa açılınca üstteki kutu <strong>gerçek Zcash testnet</strong>e bağlanır
-          (<code>testnet.zec.rocks</code>). Bu bilgisayarında uydurulmuş bir zincir değil.
-        </li>
-        <li>
-          Anahtar <strong>kapalı</strong> kalsın. Solda müşteri, sağda dükkân: ikisi de
-          zincirde birbirini göremez. Viewing key olsa tutar açılır — onu istemiyoruz.
-        </li>
-        <li>
-          Anahtarı <strong>aç</strong>. Sıra: solda “Kanıt üret” → sağda “Kanıtı kontrol et”
-          → “Başka dükkânda dene” → alttaki eşik butonları (≥ 1, ≥ 2, ≥ 2,6).
-        </li>
-        <li>
-          “Kökleri karşılaştır”: soldaki kanıt yerel bir demoya ait; üstteki kök gerçek
-          ağın. İkisi farklı — bunu gizlemiyoruz.
-        </li>
-      </ol>
-    </section>
-
-    <section class="chain" id="chain">
-      <div class="chain-head">
-        <h2>Ağ durumu</h2>
-        <span class="badge" id="chain-badge">bağlanıyor</span>
-      </div>
-      <p class="note">
-        Okunan şeyler herkese açık: blok yüksekliği, ağaç kökü, yaprak sayısı.
-        Kim ödedi, kime, kaç ZEC — bunlar bu RPC’de yok; Zcash onları yayımlamaz.
-      </p>
-      <dl id="chain-dl">
-        <div><dt>Kaynak</dt><dd>bekleniyor</dd></div>
-      </dl>
-    </section>
-
-    <section class="compare">
-      <h2>Zcash ile ZClaim farkı</h2>
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            <th>Yalnız Zcash</th>
-            <th>ZClaim eklenince</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Explorer’da ödeme</td>
-            <td>Görünmez</td>
-            <td>Yine görünmez</td>
-          </tr>
-          <tr>
-            <td>Dükkân “ödedin mi?” diye sorunca</td>
-            <td>Ya hiç cevap yok, ya viewing key ile her şey açılır</td>
-            <td>Sadece evet veya hayır. Tutar görünmez</td>
-          </tr>
-          <tr>
-            <td>Peş peşe “en az 2 mi, 2,6 mı?”</td>
-            <td>Fiş açıksa sayı zaten ortada</td>
-            <td>Cüzdan soruyu keser</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section class="split">
-      <article class="pane" id="pane-buyer">
-        <p class="kicker">Sol — sen</p>
-        <h2>Müşteri</h2>
-        <p class="hint" id="buyer-hint"></p>
-        <ul class="facts" id="buyer-facts"></ul>
-        <div class="actions" id="buyer-actions"></div>
-        <pre class="out" id="buyer-out"></pre>
-      </article>
-      <article class="pane" id="pane-seller">
-        <p class="kicker">Sağ — dükkân</p>
-        <h2>Satıcı (kapı)</h2>
-        <p class="hint" id="seller-hint"></p>
-        <ul class="facts" id="seller-facts"></ul>
-        <div class="actions" id="seller-actions"></div>
-        <pre class="out" id="seller-out"></pre>
-      </article>
-    </section>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#"><span class="brand-mark">Z</span><span>ZClaim</span><span class="version">LAB / 01</span></a>
+        <div class="network-pill" id="network-pill"><span class="pulse"></span><span id="chain-badge">TESTNET'E BAĞLANIYOR</span></div>
+        <a class="docs-link" href="../../docs/kullanim.md">Nasıl çalışır <span>↗</span></a>
+      </header>
+      <main>
+        <section class="hero">
+          <div class="eyebrow"><span>PRIVATE QUERY LAYER</span><span class="hairline"></span><span>ZCASH</span></div>
+          <div class="hero-grid">
+            <div><h1>Veriyi değil,<br /><em>doğruluğunu</em> paylaş.</h1><p class="lede">Gizli bir Zcash ödemesi hakkında tek bitlik cevap üret. Tutar, adres ve işlem kimliği cüzdandan hiç çıkmasın.</p></div>
+            <div class="mode-control">
+              <div class="mode-copy"><span class="micro">DENEY MODU</span><strong id="mode-label">Yalnızca Zcash</strong><p id="mode-description">Zincir gizli; fakat uygulama ödeme koşulunu doğrulayamıyor.</p></div>
+              <label class="switch" for="mode"><input type="checkbox" id="mode" /><span class="switch-track"><span class="switch-knob"></span></span><span class="sr-only">ZClaim katmanını aç veya kapat</span></label>
+            </div>
+          </div>
+        </section>
+        <section class="reality-strip" aria-label="Demo gerçeklik durumu">
+          <div><span class="status-icon live">●</span><p><small>CANLI VERİ</small><strong id="tip-value">Zcash testnet okunuyor</strong></p></div>
+          <div><span class="status-icon local">◇</span><p><small>KANIT KAYNAĞI</small><strong>Yerel Orchard tanığı</strong></p></div>
+          <div class="reality-warning"><span>!</span><p><small>DÜRÜST SINIR</small><strong>Demo notu henüz public testnet'te değil</strong></p></div>
+        </section>
+        <section class="workspace" id="workspace">
+          <div class="workspace-head"><div><span class="section-no">01 / PROOF EXCHANGE</span><h2>İki taraf. Sıfır veri ifşası.</h2></div><button class="reset-button" id="reset" type="button">↻ Oturumu sıfırla</button></div>
+          <div class="exchange">
+            <article class="actor wallet" id="pane-buyer">
+              <div class="actor-head"><span class="actor-icon">W</span><div><small>SOL / İSTEK ALAN</small><h3>Özel cüzdan</h3></div><span class="actor-state" id="wallet-state">BEKLİYOR</span></div>
+              <p class="actor-desc" id="buyer-hint"></p>
+              <div class="secret-card"><div class="secret-top"><span>PRIVATE WITNESS</span><span>••••••</span></div><div class="secret-amount"><span>Ödenen tutar</span><strong>•••• ZEC</strong></div><div class="secret-meta"><span>Alıcı</span><code>u1••••••••q7</code></div><div class="secret-meta"><span>Tx ID</span><code>••••••••••••</code></div></div>
+              <div class="privacy-list" id="buyer-facts"></div><div class="actor-actions" id="buyer-actions"></div><div class="result-box" id="buyer-out" aria-live="polite"></div>
+            </article>
+            <div class="channel" aria-hidden="true"><div class="channel-line"><span class="packet" id="packet">1 BIT</span></div><span class="channel-label" id="channel-label">KANAL KAPALI</span></div>
+            <article class="actor verifier" id="pane-seller">
+              <div class="actor-head"><span class="actor-icon">A</span><div><small>SAĞ / İSTEK ATAN</small><h3>Uygulama API</h3></div><span class="actor-state" id="app-state">KÖR</span></div>
+              <p class="actor-desc" id="seller-hint"></p>
+              <div class="query-builder"><span class="micro">POLICY QUERY</span><div class="query-code"><span>payment.amount</span><strong>&gt;=</strong><span id="query-value">1.0 ZEC</span></div><div class="thresholds" id="seller-actions"></div></div>
+              <div class="privacy-list" id="seller-facts"></div><div class="result-box" id="seller-out" aria-live="polite"></div>
+            </article>
+          </div>
+        </section>
+        <section class="lower-grid">
+          <article class="panel guard-panel"><span class="section-no">02 / INFERENCE GUARD</span><div class="panel-title"><h2>Sorgu bütçesi</h2><span id="guard-badge">PASİF</span></div><p>Ardışık eşik sorguları tam tutara yaklaştığında cüzdan, cevabı hesaplamadan önce isteği keser.</p><div class="meter"><span id="guard-meter"></span></div><div class="meter-labels"><span>Geniş aralık</span><span id="guard-knowledge">Bilgi sızıntısı yok</span><span>Blok</span></div><div class="event-log" id="event-log"><div><time>00:00</time><span>Sistem</span><p>Deney başlatılmayı bekliyor.</p></div></div></article>
+          <article class="panel chain-panel"><span class="section-no">03 / CHAIN TELEMETRY</span><div class="panel-title"><h2>Canlı Zcash görünümü</h2><span class="live-tag">READ ONLY</span></div><p>Bu alan public testnet'ten gelir. Kim, kime ve ne kadar ödedi bilgisi ağ tarafından yayınlanmaz.</p><dl id="chain-dl"><div><dt>Durum</dt><dd>lightwalletd bekleniyor…</dd></div></dl><button type="button" class="compare-root" id="btn-root">Yerel kanıt ile zincir kökünü karşılaştır →</button></article>
+        </section>
+      </main>
+      <footer><span>ZCLAIM / PROOF-OF-CONCEPT</span><span>Kanıt gerçek · Demo tanığı yerel · Zincir salt okunur</span></footer>
     </div>
     <script type="module" src="./main.js"></script>
   </body>
